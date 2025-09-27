@@ -23,18 +23,18 @@ export interface ServiceCardProps {
 }
 
 // Input
-export type InputType = "radio";
+export type InputType = "text" | "number" | "password" | "email" | "radio";
 
 export interface InputProps {
     id?: string;
-    type: InputType;
-    label: string;
-    placeholder: string;
-    value: string | number;
-    name: string;
-    required: boolean;
-    maxLength: number;
-    minLength: number;
-    checked: boolean;
-    onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+    type?: InputType;
+    label?: string;
+    placeholder?: string;
+    value?: string | number;
+    name?: string;
+    required?: boolean;
+    maxLength?: number;
+    minLength?: number;
+    checked?: boolean;
+    onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }

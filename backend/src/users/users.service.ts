@@ -35,7 +35,24 @@ export class UserService {
         });
         return user ?? null;
     }
-    
+
+    async findById(id: number) {
+        return this.userRepository.findOne({
+            where: { id },
+            select: [
+                'id',
+                'name',
+                'email',
+                'role',
+                'phone',
+                'cep',
+                'state',
+                'city',
+                'number',
+            ],
+        });
+    }
+
     async update(id: number, dto: UpdateUserDto): Promise<User> {
         await this.userRepository.update(id, dto);
         return this.findOne(id);
