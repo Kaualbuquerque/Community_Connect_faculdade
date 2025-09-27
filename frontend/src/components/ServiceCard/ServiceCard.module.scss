@@ -1,0 +1,31 @@
+.homeCard {
+  width: 90%;
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: 100px; // altura que desejar para o card
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.imageWrapper img {
+  object-fit: cover;
+}
+
+.homeCard h2 {
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.homeCard p {
+  color: var(--card-description-color);
+  text-align: left;
+  margin-top: 0;
+  font-size: 0.9rem;
+}

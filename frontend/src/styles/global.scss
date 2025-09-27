@@ -1,0 +1,20 @@
+@import "./variables.scss";
+
+html.light {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+html.dark {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: .2s ease-in-out;
+}

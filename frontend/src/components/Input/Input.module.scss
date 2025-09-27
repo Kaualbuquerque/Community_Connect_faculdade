@@ -1,0 +1,68 @@
+.input {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    width: 100%;
+
+    label {
+        font-weight: 600;
+    }
+
+    input,
+    textarea,
+    select {
+        background-color: var(--button-color-secondary);
+        font-family: var(--font-family);
+        height: 50px;
+        border: none;
+        border-radius: 15px;
+        padding-left: 1rem;
+        color: var(--text-color);
+        resize: none;
+    }
+
+    input::placeholder,
+    textarea::placeholder,
+    select::placeholder {
+        color: var(--card-description-color);
+    }
+}
+
+.radioBox {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 2rem;
+    margin-right: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+}
+
+.radioBox input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.radioBox label {
+    display: inline-block;
+    padding: 1rem 2rem;
+    border: 2px solid var(--button-color-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.radioBox input[type="radio"]:checked+label {
+    color: var(--text-color);
+    border-color: var(--form-profile-button-border);
+}
+
+
+.input {
+    textarea {
+        padding: .5rem;
+    }
+}

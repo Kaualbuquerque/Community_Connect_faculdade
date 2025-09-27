@@ -1,0 +1,39 @@
+@import url("../../styles/variables.scss");
+
+.navbar {
+    display: flex;
+    width: 99%;
+    align-items: center;
+    justify-content: space-between;
+    padding: .5rem 1.1rem;
+    border-bottom: 1px solid var(--border-bottom);
+    position: fixed;
+    z-index: 1000;
+    background-color: var(--background-color);
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    font-size: .6rem;
+    gap: .5rem;
+
+    a, a:visited, a:active{
+        color: var(--text-color);
+        text-decoration: none;
+    }
+}
+
+.buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-right: 1rem;
+
+    div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+}

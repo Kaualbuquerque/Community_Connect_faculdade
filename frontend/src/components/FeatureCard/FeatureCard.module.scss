@@ -1,0 +1,22 @@
+.featureCard {
+    width: 170px;
+    height: 230px;
+    display: grid;
+    padding: 1rem;
+    grid-template-rows: 1fr 4fr;
+    border: 2px solid var(--feature-card-border);
+    background-color: var(--feature-card-color);
+    border-radius: 20px;
+    transition: 0.2s ease-in-out;
+    box-shadow: 0px 2px 2px 1px var(--box-shadow);
+
+}
+
+.featureCard p {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.featureCard:hover {
+    transform: translateY(-10);
+}

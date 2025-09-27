@@ -1,0 +1,38 @@
+// styles/variables.scss
+
+:root {
+    --font-family: 'Inter', sans-serif;
+}
+
+/* Tema claro */
+html {
+    /* Background */
+    --background-color: #ffffff;
+
+    /* Text */
+    --text-color: #0D141C;
+    --banner-text-color: #ffffff;
+    --alert: #C52222;
+
+    /* Buttons */
+    --button-color-primary: #1A80E5;
+    --button-color-secondary: #E8EDF2;
+
+    /* Hover */
+    --button-color-primary-hover: #145ea8;
+    --button-color-secondary-hover: #adb1b4;
+    --alert-hover: #881313;
+
+    /* Card */
+    --card-description-color: #94ADC7;
+    --feature-card-color: #F7FAFC;
+    --feature-card-border: #0071FF;
+
+    /* Form */
+    --form-background-color: #F7FAFC;
+    --form-border-color: #0071FF;
+
+    /* Others */
+    --border-bottom: #E5E8EB;
+    --box-shadow: #00000027;
+}
