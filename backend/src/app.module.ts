@@ -1,9 +1,18 @@
+// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { ServicesModule } from './modules/services/services.module';
+import { NotesModule } from './modules/notes/notes.module';
+import { FavoritesModule } from './modules/favorites/favorites.module';
+import { ConversationsModule } from './modules/conversations/conversations.module';
+import { MessagesModule } from './modules/messages/messages.module';
+import { HistoryModule } from './modules/history/history.module';
+import { ChatModule } from './modules/chats/chat.module';
+import { ServiceImageModule } from './modules/services_images/serviceImage.module';
 
 @Module({
   imports: [
@@ -38,8 +47,14 @@ import { UsersModule } from './users/users.module';
 
     AuthModule,
     UsersModule,
+    ServicesModule,
+    NotesModule,
+    FavoritesModule,
+    ConversationsModule,
+    MessagesModule,
+    HistoryModule,
+    ChatModule,
+    ServiceImageModule,
   ],
-  controllers: [],
-  providers: [],
 })
-export class AppModule { }
+export class AppModule {}
