@@ -37,7 +37,7 @@ export class UserService {
     }
 
     async findById(id: number) {
-        return this.userRepository.findOne({
+        const user = await this.userRepository.findOne({
             where: { id },
             select: [
                 'id',
@@ -51,6 +51,12 @@ export class UserService {
                 'number',
             ],
         });
+
+        if (!user) {
+            throw new NotFoundException('Usuário não encontrado');
+        }
+
+        return user;
     }
 
     async update(id: number, dto: UpdateUserDto): Promise<User> {

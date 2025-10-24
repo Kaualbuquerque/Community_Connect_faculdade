@@ -40,7 +40,6 @@ export class ServiceImageService {
         user: User,
         files?: Express.Multer.File[],
     ): Promise<Service> {
-        console.log("🔧 Iniciando updateImages:", { id, user: user.id, fileCount: files?.length });
 
         const service = await this.serviceRepository.findOne({
             where: { id, provider: { id: user.id } },
@@ -59,12 +58,10 @@ export class ServiceImageService {
             }
 
             if (service.images.length > 0) {
-                console.log("🧹 Removendo imagens antigas:", service.images.map(i => i.id));
                 await this.imageRepository.remove(service.images);
             }
 
             const newImages = files.map((file, idx) => {
-                console.log("📸 Arquivo recebido:", file);
                 const filename = file.filename || file.originalname || 'undefined_file';
                 return this.imageRepository.create({
                     url: `/uploads/${filename}`,
@@ -78,7 +75,6 @@ export class ServiceImageService {
         }
 
         const updated = await this.serviceRepository.save(service);
-        console.log("✅ Serviço atualizado com sucesso:", updated.id);
         return updated;
     }
 

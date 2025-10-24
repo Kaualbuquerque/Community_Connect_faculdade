@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Request, UseGuards } from "@nestjs/common";
 import { NoteService } from "./notes.service";
 import { CreateNoteDto } from "./dto/create-note.dto";
 import { UpdateNoteDto } from "./dto/update-note.dto";
@@ -22,19 +22,23 @@ export class NotesController {
 
     @Get(":id")
     @UseGuards(JwtAuthGuard)
-    findOne(@Param("id") id: number) {
+    findOne(@Param("id", ParseIntPipe) id: number) {
         return this.noteService.findOne(id);
     }
 
     @Put(":id")
     @UseGuards(JwtAuthGuard)
-    update(@Param("id") id: number, dto: UpdateNoteDto) {
+    update(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateNoteDto
+    ) {
         return this.noteService.update(id, dto);
     }
 
+
     @Delete(":id")
     @UseGuards(JwtAuthGuard)
-    remove(@Param("id") id: number) {
+    remove(@Param("id", ParseIntPipe) id: number) {
         return this.noteService.remove(id);
     }
 }

@@ -16,7 +16,6 @@ export class ConversationService {
 
     async create(dto: CreateConversationDto, userId: number): Promise<Conversation> {
         return await this.dataSource.transaction(async manager => {
-            // 1️⃣ Verifica se já existe uma conversa entre esses dois usuários
             const existingConversation = await manager
                 .getRepository(Conversation)
                 .createQueryBuilder("c")
@@ -29,18 +28,15 @@ export class ConversationService {
                 return existingConversation;
             }
 
-            // 2️⃣ Cria a nova conversa
             const conversation = manager.create(Conversation);
             await manager.save(conversation);
 
-            // 3️⃣ Adiciona os participantes
             const participants = [
                 manager.create(ConversationParticipant, { conversation, user: { id: userId } }),
                 manager.create(ConversationParticipant, { conversation, user: { id: dto.participantId } }),
             ];
             await manager.save(participants);
 
-            // 4️⃣ Retorna a conversa completa com participantes
             const result = await manager.findOne(Conversation, {
                 where: { id: conversation.id },
                 relations: ['participants'],

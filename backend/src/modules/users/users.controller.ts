@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put} from "@nestjs/common";
 import { UserService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -18,17 +18,17 @@ export class UsersController {
     }
 
     @Get(":id")
-    findOne(@Param("id") id: number) {
+    findOne(@Param("id", ParseIntPipe) id: number) {
         return this.userService.findOne(id);
     }
 
     @Put(":id")
-    update(@Param("id") id: number, @Body() dto: UpdateUserDto) {
+    update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
         return this.userService.update(id, dto);
     }
 
     @Delete(":id")
-    remove(@Param("id") id: number) {
+    remove(@Param("id", ParseIntPipe) id: number) {
         return this.userService.remove(id);
     }
 }

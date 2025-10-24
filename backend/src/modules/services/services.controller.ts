@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Header, Param, Post, Put, Query, Req, Request, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Header, Param, ParseIntPipe, Post, Put, Query, Req, Request, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
 import { ServiceService } from "./services.service";
 import { CreateServiceDto } from "./dto/create-service.dto";
 import { UpdateServiceDto } from "./dto/update-service.dto";
@@ -65,15 +65,15 @@ export class ServicesController {
         return this.serviceService.getCitiesByState(state);
     }
 
-    @Put(":id")
+    @Put(':id')
     @UseGuards(JwtAuthGuard)
-    update(@Param("id") id: number, @Body() dto: UpdateServiceDto) {
+    update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateServiceDto) {
         return this.serviceService.update(id, dto);
     }
 
-    @Delete(":id")
+    @Delete(':id')
     @UseGuards(JwtAuthGuard)
-    remove(@Param("id") id: number) {
+    remove(@Param('id', ParseIntPipe) id: number) {
         return this.serviceService.remove(id);
     }
 }
