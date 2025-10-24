@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Header, Param, Post, Put, Query, Req, Request, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Header, Param, ParseIntPipe, Post, Put, Query, Req, Request, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
 import { ServiceService } from "./services.service";
 import { CreateServiceDto } from "./dto/create-service.dto";
 import { UpdateServiceDto } from "./dto/update-service.dto";
@@ -106,31 +106,15 @@ export class ServicesController {
         return this.serviceService.getCitiesByState(state);
     }
 
-    @Put(":id")
+    @Put(':id')
     @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: 'Atualiza um serviço',
-        description: 'Atualiza os dados de um serviço específico pelo seu ID.',
-    })
-    @ApiResponse({ status: 200, description: 'Serviço atualizado com sucesso.' })
-    @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
-    @ApiResponse({ status: 404, description: 'Serviço não encontrado.' })
-    update(@Param("id") id: number, @Body() dto: UpdateServiceDto) {
+    update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateServiceDto) {
         return this.serviceService.update(id, dto);
     }
 
-    @Delete(":id")
+    @Delete(':id')
     @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: 'Remove um serviço',
-        description: 'Remove um serviço específico pelo seu ID.',
-    })
-    @ApiResponse({ status: 200, description: 'Serviço removido com sucesso.' })
-    @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
-    @ApiResponse({ status: 404, description: 'Serviço não encontrado.' })
-    remove(@Param("id") id: number) {
+    remove(@Param('id', ParseIntPipe) id: number) {
         return this.serviceService.remove(id);
     }
 }

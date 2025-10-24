@@ -1,7 +1,7 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Req, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
 import { ServiceImageService } from "./serviceImage.service";
 import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
-import { multerConfig } from "src/configs/multer.config";
+import { multerConfig } from "../../configs/multer.config";
 import { UpdateServiceDto } from "../services/dto/update-service.dto";
 import { User } from "../users/user.entity";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
@@ -23,7 +23,7 @@ export class ServiceImageController {
     @ApiResponse({ status: 400, description: 'Nenhum arquivo enviado ou arquivo inválido.' })
     @ApiResponse({ status: 404, description: 'Serviço não encontrado.' })
     async uploadImage(
-        @Param("serviceId") serviceId: number,
+        @Param("serviceId", ParseIntPipe) serviceId: number,
         @UploadedFile() file: Express.Multer.File,
     ) {
         if (!file) throw new BadRequestException("Nenhum arquivo enviado");
@@ -35,14 +35,7 @@ export class ServiceImageController {
     }
 
     @Get(":serviceId")
-    @ApiOperation({
-        summary: 'Busca todas as imagens de um serviço',
-        description: 'Retorna todas as imagens associadas a um serviço pelo seu ID.',
-    })
-    @ApiParam({ name: 'serviceId', example: 1, description: 'ID do serviço' })
-    @ApiResponse({ status: 200, description: 'Imagens retornadas com sucesso.' })
-    @ApiResponse({ status: 404, description: 'Serviço não encontrado.' })
-    async getImages(@Param("serviceId") serviceId: number) {
+    async getImages(@Param("serviceId", ParseIntPipe) serviceId: number) {
         return this.serviceImageService.getImageByService(serviceId);
     }
 
@@ -60,7 +53,7 @@ export class ServiceImageController {
     @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
     @ApiResponse({ status: 404, description: 'Serviço não encontrado.' })
     async updateImages(
-        @Param("serviceId") serviceId: number,
+        @Param("serviceId", ParseIntPipe) serviceId: number,
         @UploadedFiles() files: Express.Multer.File[],
         @Body() dto: UpdateServiceDto,
         @Req() req: Request,
@@ -71,17 +64,7 @@ export class ServiceImageController {
 
 
     @Delete(":id")
-    @UseInterceptors(FilesInterceptor("files", 5, multerConfig))
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: 'Remove uma imagem de um serviço',
-        description: 'Remove uma imagem específica de um serviço pelo seu ID.',
-    })
-    @ApiParam({ name: 'id', example: 1, description: 'ID da imagem' })
-    @ApiResponse({ status: 200, description: 'Imagem removida com sucesso.' })
-    @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
-    @ApiResponse({ status: 404, description: 'Imagem não encontrada.' })
-    async delete(@Param("id") id: number) {
+    async delete(@Param("id", ParseIntPipe) id: number) {
         return this.serviceImageService.deleteImage(id);
     }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put} from "@nestjs/common";
 import { UserService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -30,42 +30,17 @@ export class UsersController {
     }
 
     @Get(":id")
-    @ApiOperation({
-        summary: "Busca um usuário por ID",
-        description: "Retorna as informações de um usuário específico pelo seu ID."
-    })
-    @ApiParam({ name: "id", example: 1, description: "ID do usuário" })
-    @ApiResponse({ status: 200, description: "Usuário encontrado com sucesso." })
-    @ApiResponse({ status: 404, description: "Usuário não encontrado" })
-    findOne(@Param("id") id: number) {
+    findOne(@Param("id", ParseIntPipe) id: number) {
         return this.userService.findOne(id);
     }
 
     @Put(":id")
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: "Atualiza um usuário existente",
-        description: "Atualiza os dados de um usuário indentificado pelo ID. Requer autenticação."
-    })
-    @ApiParam({ name: "id", example: 1, description: "ID do usuário" })
-    @ApiResponse({ status: 200, description: "usuário atualizado com sucesso." })
-    @ApiResponse({ status: 401, description: "usuário não autenticado." })
-    @ApiResponse({ status: 404, description: "usuário não encontrado." })
-    update(@Param("id") id: number, @Body() dto: UpdateUserDto) {
+    update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
         return this.userService.update(id, dto);
     }
 
     @Delete(":id")
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: "Remove um usuário",
-        description: "Exclui um usuário do sistema com base no ID informado. Requer autorização."
-    })
-    @ApiParam({ name: "id", example: 1, description: "ID do usuário" })
-    @ApiResponse({ status: 200, description: "Usuário removido com sucesso." })
-    @ApiResponse({ status: 401, description: "Usuário não autenticado." })
-    @ApiResponse({ status: 404, description: "Usuário não encontrado." })
-    remove(@Param("id") id: number) {
+    remove(@Param("id", ParseIntPipe) id: number) {
         return this.userService.remove(id);
     }
 }

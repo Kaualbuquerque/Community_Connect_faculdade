@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Request, UseGuards } from "@nestjs/common";
 import { NoteService } from "./notes.service";
 import { CreateNoteDto } from "./dto/create-note.dto";
 import { UpdateNoteDto } from "./dto/update-note.dto";
@@ -37,46 +37,23 @@ export class NotesController {
 
     @Get(":id")
     @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: 'Busca uma nota pelo ID',
-        description: 'Retorna uma nota específica pelo seu ID.',
-    })
-    @ApiParam({ name: 'id', example: 1, description: 'ID da nota' })
-    @ApiResponse({ status: 200, description: 'Nota retornada com sucesso.' })
-    @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
-    @ApiResponse({ status: 404, description: 'Nota não encontrada.' })
-    findOne(@Param("id") id: number) {
+    findOne(@Param("id", ParseIntPipe) id: number) {
         return this.noteService.findOne(id);
     }
 
     @Put(":id")
     @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: 'Atualiza uma nota',
-        description: 'Atualiza o conteúdo de uma nota específica pelo seu ID.',
-    })
-    @ApiParam({ name: 'id', example: 1, description: 'ID da nota a ser atualizada' })
-    @ApiResponse({ status: 200, description: 'Nota atualizada com sucesso.' })
-    @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
-    @ApiResponse({ status: 404, description: 'Nota não encontrada.' })
-    update(@Param("id") id: number, dto: UpdateNoteDto) {
+    update(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateNoteDto
+    ) {
         return this.noteService.update(id, dto);
     }
 
+
     @Delete(":id")
     @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: 'Remove uma nota',
-        description: 'Remove uma nota específica pelo seu ID.',
-    })
-    @ApiParam({ name: 'id', example: 1, description: 'ID da nota a ser removida' })
-    @ApiResponse({ status: 200, description: 'Nota removida com sucesso.' })
-    @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
-    @ApiResponse({ status: 404, description: 'Nota não encontrada.' })
-    remove(@Param("id") id: number) {
+    remove(@Param("id", ParseIntPipe) id: number) {
         return this.noteService.remove(id);
     }
 }
