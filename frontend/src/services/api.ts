@@ -1,8 +1,8 @@
 import axios from "axios";
+import { io } from 'socket.io-client';
 
-
-const api = axios.create({
-  baseURL: "http://localhost:4000", // ajuste para a URL do seu backend
+export const api = axios.create({
+  baseURL: `${process.env.NEXT_PUBLIC_API_URL}`,
 });
 
-export default api;
+export const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`); // seu backend NestJS

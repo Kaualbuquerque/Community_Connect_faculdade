@@ -1,9 +1,9 @@
 import FeatureCard from "@/components/FeatureCard/FeatureCard";
-import HomeCard from "@/components/ServiceCard/ServiceCard";
 import Button from "@/components/Button/Button";
 import styles from "./page.module.scss";
 
 import { FeatureCardsData } from "@/components/FeatureCard/FeatureCardsData";
+import HomeCard from "@/components/ServiceCard/ServiceCard";
 import { serviceCardData } from "@/components/ServiceCard/serviceCardData";
 
 export default function HomePage() {
@@ -40,7 +40,8 @@ export default function HomePage() {
           {FeatureCardsData.map((data, index) => (
             <FeatureCard
               key={index}
-              icon={data.icon}
+              iconLight={data.iconLight}
+              iconDark={data.iconDark}
               text={data.text}
             />
           ))}

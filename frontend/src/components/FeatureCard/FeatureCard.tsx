@@ -2,11 +2,14 @@
 
 import Image from "next/image";
 
+import { useTheme } from "@/context/ThemeContext";
 import { FeatureCardProps } from "@/utils/interfaces";
 
 import styles from "./FeatureCard.module.scss";
 
-export default function FeatureCard({ icon, text }: FeatureCardProps) {
+export default function FeatureCard({ iconLight, iconDark, text }: FeatureCardProps) {
+    const { theme } = useTheme();
+    const icon = theme === "dark" ? iconDark : iconLight;
 
     return (
         <article className={styles.featureCard}>

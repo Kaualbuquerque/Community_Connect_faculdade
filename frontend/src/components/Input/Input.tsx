@@ -12,6 +12,7 @@ export default function Input({
     maxLength,
     minLength,
     checked,
+    options,
     onChange,
 }: InputProps) {
 
@@ -20,19 +21,59 @@ export default function Input({
             case "radio":
                 return (
                     <div className={styles.radioBox}>
-                        <input
-                            type="radio"
+  <input
+    type="radio"
+    id={id}
+    name={name}
+    value={value}
+    checked={checked}
+    onChange={onChange}
+    required={required}
+  />
+  {label && <label htmlFor={id}>{label}</label>}
+</div>
+                );
+
+            case "textarea":
+                return (
+                    <>
+                        {label && <label htmlFor={id}>{label}</label>}
+                        <textarea
                             id={id}
                             name={name}
-                            value={value}
-                            checked={checked}
-                            onChange={onChange}
+                            placeholder={placeholder}
+                            maxLength={maxLength}
                             required={required}
+                            value={value}
+                            onChange={onChange}
                         />
-                        {label && <label htmlFor={id}>{label}</label>}
-                    </div>
+                    </>
                 );
-                            default:
+
+            case "select":
+                return (
+                    <>
+                        {label && <label htmlFor={id}>{label}</label>}
+                        <select
+                            id={id}
+                            name={name}
+                            required={required}
+                            value={value}
+                            onChange={onChange}
+                        >
+                            <option value="" disabled hidden>
+                                {placeholder}
+                            </option>
+                            {options?.map((opt) => (
+                                <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                    </>
+                );
+
+            default:
                 return (
                     <>
                         {label && <label htmlFor={id}>{label}</label>}

@@ -1,0 +1,55 @@
+.chatConversationPage {
+    padding: 5rem 5rem 0rem 20rem;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.messages {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+
+
+}
+
+.messages::-webkit-scrollbar {
+    width: 20px;
+    /* largura da barra */
+    background: #f0f0f0;
+    /* cor de fundo */
+}
+
+.messages::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    /* cor do "botão" */
+    border-radius: 8px;
+}
+
+/* Firefox */
+.messages {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-bottom) #ffffff0a;
+}
+
+.inputText {
+    width: 75%;
+    height: 15%;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    
+    input{
+        margin: 0;
+    }
+
+    button{
+        height: 47%;
+    }
+}
