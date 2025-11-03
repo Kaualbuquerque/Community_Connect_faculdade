@@ -1,0 +1,41 @@
+.favoritesPage {
+    padding: 5rem 15rem 10rem 20rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5rem;
+}
+
+.inputs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    margin-top: -2rem;
+    width: 50%;
+    gap: 1rem;
+
+    button {
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+            width: 50%;
+            height: 50%;
+        }
+    }
+}
+
+.favorites {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 1rem;
+    
+    button {
+        width: 35%;
+    }
+}

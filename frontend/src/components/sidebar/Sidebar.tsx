@@ -5,16 +5,24 @@ import styles from "./Sidebar.module.scss";
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTheme } from "@/context/ThemeContext";
 
+import dashboard_icon_light from "@/icons/sidebar/home-light.png";
+import search_icon_light from "@/icons/sidebar/find-light.png";
+import favorites_icon_light from "@/icons/sidebar/heart-light.png";
+import services_icon_light from "@/icons/sidebar/service-light.png";
+import chats_icon_light from "@/icons/sidebar/chats-light.png";
 
-import dashboard_icon from "../../../public/icons/sidebar/home-dark.png";
-import search_icon from "../../../public/icons/sidebar/find-dark.png";
-import favorites_icon from "../../../public/icons/sidebar/heart-dark.png";
-import services_icon from "../../../public/icons/sidebar/service-dark.png";
-import chats_icon from "../../../public/icons/sidebar/chats-dark.png";
+import dashboard_icon_dark from "@/icons/sidebar/home-dark.png";
+import search_icon_dark from "@/icons/sidebar/find-dark.png";
+import favorites_icon_dark from "@/icons/sidebar/heart-dark.png";
+import services_icon_dark from "@/icons/sidebar/service-dark.png";
+import chats_icon_dark from "@/icons/sidebar/chats-dark.png";
 import Button from "../Button/Button";
+import { useAutoLogout } from "@/utils/useAutoLogout";
 
 export default function Sidebar() {
+    const { theme } = useTheme();
     const [role, setRole] = useState<string | null>(null);
 
     useEffect(() => {
@@ -27,15 +35,22 @@ export default function Sidebar() {
         }
     }, []);
 
+    const icons = {
+        dashboard: theme === "light" ? dashboard_icon_dark : dashboard_icon_light,
+        search: theme === "light" ? search_icon_dark : search_icon_light,
+        favorites: theme === "light" ? favorites_icon_dark : favorites_icon_light,
+        services: theme === "light" ? services_icon_dark : services_icon_light,
+        chats: theme === "light" ? chats_icon_dark : chats_icon_light,
+    };
 
     const menuItems = [
-        { href: "/dashboard", label: "Painel", icon: dashboard_icon },
-        { href: "/dashboard/search-service", label: "Buscar serviços", icon: search_icon },
-        { href: "/dashboard/favorites", label: "Favoritos", icon: favorites_icon },
+        { href: "/dashboard", label: "Painel", icon: icons.dashboard },
+        { href: "/dashboard/search-service", label: "Buscar serviços", icon: icons.search },
+        { href: "/dashboard/favorites", label: "Favoritos", icon: icons.favorites },
         ...(role === "provider"
-            ? [{ href: "/dashboard/your-services", label: "Seus serviços", icon: services_icon }]
+            ? [{ href: "/dashboard/your-services", label: "Seus serviços", icon: icons.services }]
             : []),
-        { href: "/dashboard/chats", label: "Chats", icon: chats_icon },
+        { href: "/dashboard/chats", label: "Chats", icon: icons.chats },
     ];
 
     return (
@@ -54,7 +69,7 @@ export default function Sidebar() {
             </nav>
 
             <div className={styles.logout}>
-                <Button text="Sair" type="alert" />
+                <Link href={"/"} onClick={useAutoLogout}><Button text="Sair" type="alert"/></Link>
             </div>
         </aside>
     );

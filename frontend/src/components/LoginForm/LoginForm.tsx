@@ -1,22 +1,27 @@
 "use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
+
+import { useTheme } from "@/context/ThemeContext";
+import { loginUser } from "@/services/auth";
 
 import Input from "../Input/Input";
 import Button from "../Button/Button";
 
 import styles from "./LoginForm.module.scss";
 
-import logo from "../../../public/icons/logo/community_connect_logo_dark.png";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { LoginDTO } from "@/utils/dtos";
-import { authService } from "@/services/auth";
+import logoLight from "@/icons/logo/community_connect_logo_light.png";
+import logoDark from "@/icons/logo/community_connect_logo_dark.png";
+import { LoginFormState } from "@/utils/interfaces";
 
 
 export default function LoginForm() {
+    const { theme } = useTheme();
     const router = useRouter();
 
-    const [form, setForm] = useState<LoginDTO>({
+    const [form, setForm] = useState<LoginFormState>({
         email: "",
         password: "",
     });
@@ -32,7 +37,7 @@ export default function LoginForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await authService.login(form);
+            const response = await loginUser(form);
 
             const { access_token, user } = response;
             localStorage.setItem("token", access_token);
@@ -44,10 +49,13 @@ export default function LoginForm() {
         }
     };
 
+    const logo = theme === "light" ? logoDark : logoLight;
+    const logoAlt = theme === "light" ? "Community Connect logo - modo claro" : "Community Connect logo - modo escuro";
+
     return (
         <form className={styles.loginForm} onSubmit={handleSubmit} noValidate>
             <header className={styles.logo}>
-                <Image src={logo} alt="" />
+                <Image src={logo} alt={logoAlt} />
                 <h3>Community Connect</h3>
             </header>
 

@@ -5,34 +5,76 @@
 }
 
 /* Tema claro */
-html {
+html.light {
     /* Background */
     --background-color: #ffffff;
 
     /* Text */
     --text-color: #0D141C;
-    --banner-text-color: #ffffff;
     --alert: #C52222;
-
-    /* Buttons */
-    --button-color-primary: #1A80E5;
-    --button-color-secondary: #E8EDF2;
-
-    /* Hover */
-    --button-color-primary-hover: #145ea8;
-    --button-color-secondary-hover: #adb1b4;
-    --alert-hover: #881313;
+    --banner-text-color: #ffffff;
 
     /* Card */
     --card-description-color: #94ADC7;
     --feature-card-color: #F7FAFC;
+    --feature-card-color-hover: #1A2633;
     --feature-card-border: #0071FF;
+
+    /* Buttons */
+    --button-color-primary: #1A80E5;
+    --button-color-primary-hover: #145ea8;
+    --button-color-secondary: #E8EDF2;
+
+    --border-background-color: #334D66;
+
+
+    /* Hover */
+    --button-color-secondary-hover: #adb1b4;
+    --alert-hover: #881313;
 
     /* Form */
     --form-background-color: #F7FAFC;
     --form-border-color: #0071FF;
+    --form-profile-button-border: #0071FF;
 
     /* Others */
     --border-bottom: #E5E8EB;
     --box-shadow: #00000027;
+}
+
+/* Tema escuro */
+html.dark {
+    /* Background */
+    --background-color: #121A21;
+
+    /* Text */
+    --text-color: #ffffff;
+    --alert: #C52222;
+    --banner-text-color: #ffffff;
+
+    /* Card */
+    --card-description-color: #94ADC7;
+    --feature-card-color: #1A2633;
+    --feature-card-color-hover: #F7FAFC;
+    --feature-card-border: #334D66;
+
+    /* Buttons */
+    --button-color-primary: #1A80E5;
+    --button-color-primary-hover: #145ea8;
+    --button-color-secondary: #243647;
+
+    --border-background-color: #334D66;
+
+    /* Hover */
+    --button-color-secondary-hover: #39556e;
+    --alert-hover: #881313;
+
+    /* Form */
+    --form-background-color: #1A2633;
+    --form-border-color: #334D66;
+    --form-profile-button-border: #39556e;
+
+    /* Others */
+    --border-bottom: #334D66;
+
 }

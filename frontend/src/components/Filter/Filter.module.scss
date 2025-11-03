@@ -1,0 +1,49 @@
+.filter {
+    background-color: var(--background-color);
+    width: 15%;
+    border: 2px solid var(--feature-card-border);
+    border-radius: 10px;
+    padding: 1rem;
+    position: fixed;
+    top: 25%;
+    left: 65%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    button {
+        align-self: flex-end;
+    }
+}
+
+.price {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    border: none;
+
+    input {
+        width: 90%;
+        align-self: center;
+    }
+
+    .priceRange {
+        width: 100%;
+        margin-top: .3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+}
+
+.buttons{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+}
