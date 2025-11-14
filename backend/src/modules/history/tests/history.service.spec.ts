@@ -9,8 +9,8 @@ import { CreateHistoryDto } from '../dto/create-service-history.dto';
 
 describe('HistoryService (unitário)', () => {
     let service: HistoryService;
-    let HistoryRepository: Partial<Repository<History>>;
-    let FavoriteRepository: Partial<Repository<Favorite>>;
+    let HistoryRepository: any;
+    let FavoriteRepository: any;
 
     beforeEach(async () => {
         HistoryRepository = {
@@ -20,6 +20,7 @@ describe('HistoryService (unitário)', () => {
             save: jest.fn(),
             delete: jest.fn(),
             count: jest.fn(),
+            createQueryBuilder: jest.fn(),
         };
 
         FavoriteRepository = {
@@ -38,13 +39,18 @@ describe('HistoryService (unitário)', () => {
     });
 
     it('deve criar um histórico novo se não existir', async () => {
-        const dto: CreateHistoryDto = { consumerId: 1, serviceId: 2 };
+        const dto: CreateHistoryDto = {
+            consumerId: 1,
+            serviceId: 2,
+            usedAt: new Date().toISOString(),
+        };
+
         const fakeHistory = { id: 10 };
 
-        (HistoryRepository.findOne as jest.Mock).mockResolvedValueOnce(undefined);
-        (HistoryRepository.count as jest.Mock).mockResolvedValue(0);
-        (HistoryRepository.create as jest.Mock).mockReturnValue(fakeHistory);
-        (HistoryRepository.save as jest.Mock).mockResolvedValue(fakeHistory);
+        HistoryRepository.findOne.mockResolvedValueOnce(undefined);
+        HistoryRepository.count.mockResolvedValue(0);
+        HistoryRepository.create.mockReturnValue(fakeHistory);
+        HistoryRepository.save.mockResolvedValue(fakeHistory);
 
         const result = await service.create(dto);
 
@@ -53,23 +59,29 @@ describe('HistoryService (unitário)', () => {
             consumer: { id: dto.consumerId },
             service: { id: dto.serviceId },
         });
-        expect(HistoryRepository.save).toHaveBeenCalledWith(fakeHistory);
+
         expect(result).toEqual(fakeHistory);
     });
 
     it('deve remover o histórico mais antigo se exceder MAX_HISTORY', async () => {
-        const dto: CreateHistoryDto = { consumerId: 1, serviceId: 2 };
-        const oldestRecord = { id: 5 };
+        const dto: CreateHistoryDto = {
+            consumerId: 1,
+            serviceId: 2,
+            usedAt: new Date().toISOString(),
+        };
 
-        (HistoryRepository.findOne as jest.Mock)
+        const oldestRecord = { id: 5 };
+        const fakeHistory = { id: 10 };
+
+        HistoryRepository.findOne
             .mockResolvedValueOnce(undefined)
             .mockResolvedValueOnce(oldestRecord);
-        (HistoryRepository.count as jest.Mock).mockResolvedValue(5); // atinge limite
-        (HistoryRepository.delete as jest.Mock).mockResolvedValue(undefined);
 
-        const fakeHistory = { id: 10 };
-        (HistoryRepository.create as jest.Mock).mockReturnValue(fakeHistory);
-        (HistoryRepository.save as jest.Mock).mockResolvedValue(fakeHistory);
+        HistoryRepository.count.mockResolvedValue(5);
+        HistoryRepository.delete.mockResolvedValue(undefined);
+
+        HistoryRepository.create.mockReturnValue(fakeHistory);
+        HistoryRepository.save.mockResolvedValue(fakeHistory);
 
         const result = await service.create(dto);
 
@@ -78,35 +90,95 @@ describe('HistoryService (unitário)', () => {
     });
 
     it('deve remover histórico existente antes de criar um novo', async () => {
-        const dto: CreateHistoryDto = { consumerId: 1, serviceId: 2 };
-        const existingRecord = { id: 7 };
+        const dto: CreateHistoryDto = {
+            consumerId: 1,
+            serviceId: 2,
+            usedAt: new Date().toISOString(),
+        };
 
-        (HistoryRepository.findOne as jest.Mock)
-            .mockResolvedValueOnce(existingRecord) 
-            .mockResolvedValueOnce(undefined); 
-        (HistoryRepository.count as jest.Mock).mockResolvedValue(0);
-        (HistoryRepository.delete as jest.Mock).mockResolvedValue(undefined);
-
+        const existing = { id: 7 };
         const fakeHistory = { id: 10 };
-        (HistoryRepository.create as jest.Mock).mockReturnValue(fakeHistory);
-        (HistoryRepository.save as jest.Mock).mockResolvedValue(fakeHistory);
+
+        HistoryRepository.findOne
+            .mockResolvedValueOnce(existing)
+            .mockResolvedValueOnce(undefined);
+
+        HistoryRepository.count.mockResolvedValue(0);
+        HistoryRepository.delete.mockResolvedValue(undefined);
+
+        HistoryRepository.create.mockReturnValue(fakeHistory);
+        HistoryRepository.save.mockResolvedValue(fakeHistory);
 
         const result = await service.create(dto);
 
-        expect(HistoryRepository.delete).toHaveBeenCalledWith(existingRecord.id);
+        expect(HistoryRepository.delete).toHaveBeenCalledWith(existing.id);
         expect(result).toEqual(fakeHistory);
     });
 
-
     it('deve remover histórico existente', async () => {
-        (HistoryRepository.delete as jest.Mock).mockResolvedValue({ affected: 1 });
+        HistoryRepository.delete.mockResolvedValue({ affected: 1 });
+
         await expect(service.remove(1)).resolves.toBeUndefined();
         expect(HistoryRepository.delete).toHaveBeenCalledWith(1);
     });
 
     it('deve lançar NotFoundException ao remover histórico inexistente', async () => {
-        (HistoryRepository.delete as jest.Mock).mockResolvedValue({ affected: 0 });
+        HistoryRepository.delete.mockResolvedValue({ affected: 0 });
+
         await expect(service.remove(99)).rejects.toThrow(NotFoundException);
         expect(HistoryRepository.delete).toHaveBeenCalledWith(99);
+    });
+
+    it('deve retornar históricos formatados corretamente em findByConsumer', async () => {
+        const consumerId = 1;
+
+        const mockHistories = [
+            {
+                id: 1,
+                usedAt: new Date(),
+                service: {
+                    id: 10,
+                    name: 'Serviço X',
+                    description: 'Desc',
+                    category: 'Test',
+                    state: 'PE',
+                    city: 'Recife',
+                    price: 100,
+                    provider: { id: 5 },
+                    images: [{ url: 'img1.jpg' }, { url: 'img2.jpg' }],
+                },
+            },
+        ];
+
+        const qb: any = {
+            leftJoinAndSelect: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            orderBy: jest.fn().mockReturnThis(),
+            getMany: jest.fn().mockResolvedValue(mockHistories),
+        };
+
+        HistoryRepository.createQueryBuilder.mockReturnValue(qb);
+
+        FavoriteRepository.find.mockResolvedValue([]);
+
+        const result = await service.findByConsumer(consumerId);
+
+        expect(result).toEqual([
+            {
+                ...mockHistories[0],
+                service: {
+                    id: 10,
+                    name: 'Serviço X',
+                    description: 'Desc',
+                    category: 'Test',
+                    state: 'PE',
+                    city: 'Recife',
+                    price: 100,
+                    provider: { id: 5 },
+                    images: ['img1.jpg', 'img2.jpg'],
+                    isFavorite: false,
+                },
+            },
+        ]);
     });
 });

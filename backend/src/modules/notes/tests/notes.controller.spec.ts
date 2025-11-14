@@ -1,3 +1,4 @@
+// tests updated: src/modules/notes/tests/notes.controller.int.spec.ts
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication } from "@nestjs/common";
 import * as request from "supertest";
@@ -23,7 +24,6 @@ describe("NoteController (integração simulada)", () => {
         city: "São Paulo",
         number: "123",
         createdAt: new Date(),
-        // Relations
         services: [],
         favorites: [],
         notes: [],
@@ -47,8 +47,8 @@ describe("NoteController (integração simulada)", () => {
         })
             .overrideGuard(JwtAuthGuard)
             .useValue({
-                canActivate: (context) => {
-                    const req = context.switchToHttp().getRequest();
+                canActivate: (ctx) => {
+                    const req = ctx.switchToHttp().getRequest();
                     req.user = mockUser;
                     return true;
                 },
@@ -59,21 +59,20 @@ describe("NoteController (integração simulada)", () => {
         await app.init();
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
+    afterEach(() => jest.clearAllMocks());
 
     afterAll(async () => {
         await app.close();
     });
 
-    it("deve criar uma nota", async () => {
+    it("cria nota", async () => {
         const dto = { content: "Minha primeira nota" };
+
         const fakeNote: Note = {
             id: 1,
-            content: "Minha primeira nota",
+            content: dto.content,
             createdAt: new Date(),
-            user: mockUser as any,
+            user: mockUser,
         };
 
         mockNoteService.create.mockResolvedValue(fakeNote);
@@ -85,17 +84,18 @@ describe("NoteController (integração simulada)", () => {
 
         expect(response.body).toEqual({
             id: 1,
-            content: "Minha primeira nota",
+            content: dto.content,
             createdAt: fakeNote.createdAt.toISOString(),
             user: {
                 ...mockUser,
                 createdAt: mockUser.createdAt.toISOString(),
             },
         });
+
         expect(mockNoteService.create).toHaveBeenCalledWith(dto, mockUser);
     });
 
-    it("deve retornar todas as notas do usuário", async () => {
+    it("retorna notas do usuário", async () => {
         const fakeNotes = [
             { id: 1, content: "Nota 1", createdAt: new Date(), user: mockUser },
             { id: 2, content: "Nota 2", createdAt: new Date(), user: mockUser },
@@ -108,7 +108,7 @@ describe("NoteController (integração simulada)", () => {
             .expect(200);
 
         expect(response.body).toEqual(
-            fakeNotes.map(n => ({
+            fakeNotes.map((n) => ({
                 ...n,
                 createdAt: n.createdAt.toISOString(),
                 user: {
@@ -117,10 +117,11 @@ describe("NoteController (integração simulada)", () => {
                 },
             })),
         );
+
         expect(mockNoteService.findNotesByUser).toHaveBeenCalledWith(mockUser);
     });
 
-    it("deve buscar uma nota por ID", async () => {
+    it("retorna nota específica", async () => {
         const fakeNote = {
             id: 1,
             content: "Nota específica",
@@ -138,19 +139,20 @@ describe("NoteController (integração simulada)", () => {
             ...fakeNote,
             createdAt: fakeNote.createdAt.toISOString(),
             user: {
-                ...fakeNote.user,
-                createdAt: fakeNote.user.createdAt.toISOString(),
+                ...mockUser,
+                createdAt: mockUser.createdAt.toISOString(),
             },
         });
 
         expect(mockNoteService.findOne).toHaveBeenCalledWith(1);
     });
 
-    it("deve atualizar uma nota", async () => {
+    it("atualiza nota", async () => {
         const dto = { content: "Nota atualizada" };
+
         const updatedNote = {
             id: 1,
-            content: "Nota atualizada",
+            content: dto.content,
             createdAt: new Date(),
             user: mockUser,
         };
@@ -166,14 +168,15 @@ describe("NoteController (integração simulada)", () => {
             ...updatedNote,
             createdAt: updatedNote.createdAt.toISOString(),
             user: {
-                ...updatedNote.user,
-                createdAt: updatedNote.user.createdAt.toISOString(),
-            }
+                ...mockUser,
+                createdAt: mockUser.createdAt.toISOString(),
+            },
         });
+
         expect(mockNoteService.update).toHaveBeenCalledWith(1, dto);
     });
 
-    it("deve remover uma nota", async () => {
+    it("remove nota", async () => {
         mockNoteService.remove.mockResolvedValue(undefined);
 
         await request(app.getHttpServer())

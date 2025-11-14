@@ -1,9 +1,10 @@
 // src/modules/auth/auth.controller.ts
-import { Controller, Post, Body, Request, UseGuards, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -29,7 +30,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: 'Login realizado com sucesso.' })
   @ApiResponse({ status: 401, description: 'Credenciais inválidas.' })
-  @ApiBody({ description: 'Email e senha do usuário', type: RegisterDto }) // pode criar um LoginDto específico
+  @ApiBody({ description: 'Email e senha do usuário', type: LoginDto }) // pode criar um LoginDto específico
   async login(@Request() req) {
     if (!req.user) {
       throw new UnauthorizedException('Credenciais inválidas');

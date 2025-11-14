@@ -1,9 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
-import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -25,23 +24,19 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '10mb' }));
   app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
-  // Servir uploads
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/',
-  });
-
+  // Configuração do Swagger
   const config = new DocumentBuilder()
-    .setTitle("Community Connect")
-    .setDescription("API para gestão de serviços e usuários locais")
-    .setVersion("1.0")
+    .setTitle('Catálogo Comunitário de Serviços Locais')
+    .setDescription('API para gerenciar usuários, serviços, imagens, favoritos, notas, histórico e conversas.')
+    .setVersion('1.0')
     .addBearerAuth()
     .build();
-
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api/docs", app, document);
+  SwaggerModule.setup('api-docs', app, document);
 
   const port = process.env.PORT ? parseInt(process.env.PORT) : 4000;
   await app.listen(port);
   console.log(`Server running on port ${port}`);
+  console.log(`Swagger docs available at http://localhost:${port}/api-docs`);
 }
 bootstrap();

@@ -23,5 +23,5 @@ export class ConversationParticipant {
   lastReadMessageId?: number;
 
   @Column({ default: false })
-  isDeleted: boolean;
+  deleted: boolean; // true se o usuário deletou a conversa
 }

@@ -34,9 +34,12 @@ describe('FavoriteService', () => {
     const consumerId = 1;
     const serviceId = 2;
 
-    const fakeFavorite = { id: 1, consumer: { id: consumerId }, service: { id: serviceId } } as Favorite;
+    const fakeFavorite = {
+      id: 1,
+      consumer: { id: consumerId },
+      service: { id: serviceId },
+    } as Favorite;
 
-    // Simula que não existe favorito ainda
     favoriteRepository.findOne.mockResolvedValueOnce(null);
     favoriteRepository.create.mockReturnValue(fakeFavorite);
     favoriteRepository.save.mockResolvedValue(fakeFavorite);
@@ -78,13 +81,21 @@ describe('FavoriteService', () => {
   });
 
   it('deve listar favoritos de um usuário', async () => {
-    const userId = 1;
+    const consumerId = 1;
+
     const fakeFavorites = [
-      { service: { id: 10, name: 'Serviço X' } },
-      { service: { id: 20, name: 'Serviço Y' } },
+      {
+        id: 1,
+        consumer: { id: consumerId },
+        service: { id: 10, name: 'Serviço X', images: [] },
+      },
+      {
+        id: 2,
+        consumer: { id: consumerId },
+        service: { id: 20, name: 'Serviço Y', images: [] },
+      },
     ];
 
-    // Mock para query builder encadeado
     const mockQueryBuilder: any = {
       leftJoinAndSelect: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
@@ -94,17 +105,27 @@ describe('FavoriteService', () => {
 
     favoriteRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
-    const result = await service.findByUser(userId, { category: 'Limpeza' });
+    const result = await service.findByUser(consumerId, { category: 'Limpeza' });
 
     expect(favoriteRepository.createQueryBuilder).toHaveBeenCalledWith('favorite');
-    expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledTimes(2);
-    expect(mockQueryBuilder.where).toHaveBeenCalledWith('favorite.consumerId = :userId', { userId });
-    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('service.category = :category', { category: 'Limpeza' });
+    expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledTimes(4);
+    expect(mockQueryBuilder.where).toHaveBeenCalledWith('consumer.id = :consumerId', { consumerId });
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+      'service.category = :category',
+      { category: 'Limpeza' },
+    );
 
-    // Verifica se retornou os serviços com isFavorite true
     expect(result).toEqual([
-      { id: 10, name: 'Serviço X', isFavorite: true },
-      { id: 20, name: 'Serviço Y', isFavorite: true },
+      {
+        id: 1,
+        consumer: { id: consumerId },
+        service: { id: 10, name: 'Serviço X', images: [], isFavorite: true },
+      },
+      {
+        id: 2,
+        consumer: { id: consumerId },
+        service: { id: 20, name: 'Serviço Y', images: [], isFavorite: true },
+      },
     ]);
   });
 });

@@ -1,4 +1,4 @@
-import { CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ConversationParticipant } from "./conversation-participant.entity";
 import { Message } from "../messages/message.entity";
 

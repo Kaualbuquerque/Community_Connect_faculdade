@@ -4,6 +4,12 @@ import { UserService } from '../../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from '../dto/register.dto';
 import * as bcrypt from 'bcrypt';
+import { UnauthorizedException } from '@nestjs/common';
+
+interface JwtPayload {
+    sub: number;
+    role: "consumer" | "provider";
+}
 
 describe('AuthService', () => {
     let authService: AuthService;
@@ -14,6 +20,7 @@ describe('AuthService', () => {
         usersService = {
             create: jest.fn(),
             findByEmail: jest.fn(),
+            findOne: jest.fn(), // necessário para validateJwtPayload
         };
 
         jwtService = {
@@ -58,29 +65,61 @@ describe('AuthService', () => {
 
         expect(resultado).toHaveProperty('id', 1);
         expect(resultado).toHaveProperty('email', dto.email);
-        expect(resultado).not.toHaveProperty('password', dto.password);
+        expect(resultado).not.toHaveProperty('password');
     });
 
     it('deve retornar um token de acesso ao fazer login', async () => {
         const usuario = { id: 1, email: 'teste@example.com', role: 'consumer', password: 'hashedPassword' };
 
-        // Mock do bcrypt.compare sempre retorna true
         jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
 
         const resultado = await authService.login(usuario as any);
 
         expect(resultado).toHaveProperty('access_token', 'token-mock');
+        expect(resultado).toHaveProperty('user', usuario);
         expect(jwtService.sign).toHaveBeenCalledWith({ sub: usuario.id, role: usuario.role });
     });
 
     it('deve retornar null ao validar usuário com senha incorreta', async () => {
-        const usuario = { id: 1, email: 'teste@example.com', password: 'hashedPassword' };
-
-        // Mock do bcrypt.compare retorna false
         jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
 
-        const resultado = await authService.validateUser(usuario.email, 'senhaErrada');
+        (usersService.findByEmail as jest.Mock).mockResolvedValue({
+            id: 1,
+            email: 'teste@example.com',
+            password: 'hashedPassword',
+        });
+
+        const resultado = await authService.validateUser('teste@example.com', 'senhaErrada');
 
         expect(resultado).toBeNull();
+    });
+
+    it('deve validar o payload JWT e retornar o usuário', async () => {
+        const usuario = { id: 1, email: 'teste@example.com', role: 'consumer' };
+
+        (usersService.findOne as jest.Mock).mockResolvedValue(usuario);
+
+        const payload: JwtPayload = {
+            sub: 1,
+            role: "consumer",
+        };
+
+        const resultado = await authService.validateJwtPayload(payload);
+
+        expect(usersService.findOne).toHaveBeenCalledWith(1);
+        expect(resultado).toEqual(usuario);
+    });
+
+    it('deve lançar UnauthorizedException caso o usuário não exista', async () => {
+        (usersService.findOne as jest.Mock).mockResolvedValue(null);
+
+        const payload: JwtPayload = {
+            sub: 1,
+            role: "consumer",
+        };
+
+        await expect(authService.validateJwtPayload(payload))
+            .rejects
+            .toThrow(UnauthorizedException);
     });
 });

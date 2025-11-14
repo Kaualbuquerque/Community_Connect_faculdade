@@ -6,13 +6,15 @@ export class ServiceImage {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: "text" })
+    @Column()
     url: string;
+
+    @Column()
+    public_id: string;
 
     @Column()
     position: number;
 
-    @ManyToOne(() => Service, (service) => service.images, { onDelete: "CASCADE" })
-    @JoinColumn({ name: "service_id" })
-    service: Service
+    @ManyToOne(() => Service, (service) => service.images, { onDelete: 'CASCADE' })
+    service: Service;
 }

@@ -11,17 +11,13 @@ describe('ServicesController (integração simulada)', () => {
     let mockServiceService: any;
 
     beforeAll(async () => {
-        // Mock do ServiceService
         mockServiceService = {
-            create: jest.fn().mockImplementation(dto => Promise.resolve({
-                id: 1,
-                ...dto,
-            })),
+            create: jest.fn().mockImplementation((dto, user) => Promise.resolve({ id: 1, ...dto, user })),
             findAllWithFavorite: jest.fn().mockResolvedValue([
-                { id: 1, title: 'Serviço Teste', description: 'Descrição', price: 100, category: 'Limpeza' }
+                { id: 1, title: 'Serviço Teste', description: 'Descrição', price: 100, category: 'Limpeza' },
             ]),
             findAllByUser: jest.fn().mockResolvedValue([
-                { id: 1, title: 'Serviço do Usuário' }
+                { id: 1, title: 'Serviço do Usuário' },
             ]),
             update: jest.fn().mockImplementation((id, dto) => Promise.resolve({ id, ...dto })),
             remove: jest.fn().mockResolvedValue(undefined),
@@ -39,12 +35,16 @@ describe('ServicesController (integração simulada)', () => {
             .useValue({
                 canActivate: (context: any) => {
                     const req = context.switchToHttp().getRequest();
-                    req.user = { id: 1, name: 'Test User' }; // mock do usuário
+                    req.user = { id: 1 };
                     return true;
                 },
             })
             .overrideGuard(OptionalJwtAuthGuard)
-            .useValue({ canActivate: () => true }) // Optional JWT mock
+            .useValue({ canActivate: (context: any) => {
+                const req = context.switchToHttp().getRequest();
+                req.user = { id: 1 };
+                return true;
+            }})
             .compile();
 
         app = moduleRef.createNestApplication();
@@ -63,8 +63,8 @@ describe('ServicesController (integração simulada)', () => {
             .send(dto)
             .expect(201);
 
-        expect(res.body).toEqual({ id: 1, ...dto });
-        expect(mockServiceService.create).toHaveBeenCalledWith(dto, { id: 1, name: 'Test User' });
+        expect(res.body).toEqual({ id: 1, ...dto, user: { id: 1 } });
+        expect(mockServiceService.create).toHaveBeenCalledWith(dto, { id: 1 });
     });
 
     it('GET /services - deve listar todos os serviços', async () => {
@@ -73,7 +73,14 @@ describe('ServicesController (integração simulada)', () => {
             .expect(200);
 
         expect(Array.isArray(res.body)).toBe(true);
-        expect(mockServiceService.findAllWithFavorite).toHaveBeenCalled();
+        expect(mockServiceService.findAllWithFavorite).toHaveBeenCalledWith(1, {
+            state: undefined,
+            city: undefined,
+            category: undefined,
+            minPrice: undefined,
+            maxPrice: undefined,
+            search: undefined,
+        });
     });
 
     it('GET /services/my-services - deve listar os serviços do usuário', async () => {
@@ -82,7 +89,7 @@ describe('ServicesController (integração simulada)', () => {
             .expect(200);
 
         expect(Array.isArray(res.body)).toBe(true);
-        expect(mockServiceService.findAllByUser).toHaveBeenCalled();
+        expect(mockServiceService.findAllByUser).toHaveBeenCalledWith(1);
     });
 
     it('PUT /services/:id - deve atualizar o serviço', async () => {

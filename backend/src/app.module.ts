@@ -13,6 +13,7 @@ import { MessagesModule } from './modules/messages/messages.module';
 import { HistoryModule } from './modules/history/history.module';
 import { ChatModule } from './modules/chats/chat.module';
 import { ServiceImageModule } from './modules/services_images/serviceImage.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -22,25 +23,20 @@ import { ServiceImageModule } from './modules/services_images/serviceImage.modul
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const host = config.get<string>('DB_HOST');
-        const port = config.get<number>('DB_PORT');
-        const username = config.get<string>('DB_USER');
-        const password = config.get<string>('DB_PASS');
-        const database = config.get<string>('DB_NAME');
+        const databaseUrl = config.get<string>('DATABASE_URL');
 
-        if (!host || !port || !username || database === undefined) {
-          throw new Error('Configuração do banco de dados inválida. Verifique seu .env');
+        if (!databaseUrl) {
+          throw new Error('A variável de ambiente DATABASE_URL não está definida.');
         }
 
         return {
           type: 'postgres',
-          host,
-          port,
-          username,
-          password,
-          database,
+          url: databaseUrl,
           entities: [__dirname + '/**/*.entity.{ts,js}'],
-          synchronize: true, // ATENÇÃO: usar somente em desenvolvimento para criar as tabelas automaticamente
+          synchronize: true, // usar apenas em dev
+          ssl: {
+            rejectUnauthorized: false, // necessário para Render/Postgres cloud
+          },
         };
       },
     }),
@@ -55,6 +51,7 @@ import { ServiceImageModule } from './modules/services_images/serviceImage.modul
     HistoryModule,
     ChatModule,
     ServiceImageModule,
+    CloudinaryModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

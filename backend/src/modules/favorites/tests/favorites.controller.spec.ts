@@ -9,7 +9,6 @@ describe('FavoriteController', () => {
     let app: INestApplication;
     let favoriteService: FavoriteService;
 
-    // Fake data para os testes
     const fakeFavorite = {
         id: 1,
         consumer: { id: 1 },
@@ -29,19 +28,18 @@ describe('FavoriteController', () => {
                 {
                     provide: FavoriteService,
                     useValue: {
-                        addFavorite: jest.fn().mockResolvedValue(fakeFavorite),
-                        findByUser: jest.fn().mockResolvedValue(fakeFavorites),
-                        removeFavorite: jest.fn().mockResolvedValue(undefined),
+                        addFavorite: jest.fn(),
+                        findByUser: jest.fn(),
+                        removeFavorite: jest.fn(),
                     },
                 },
             ],
         })
-            // Mock do JWT Guard para permitir acesso sem autenticação real
             .overrideGuard(JwtAuthGuard)
             .useValue({
                 canActivate: (context) => {
                     const req = context.switchToHttp().getRequest();
-                    req.user = { id: 1 }; // simula o usuário autenticado
+                    req.user = { id: 1 };
                     return true;
                 },
             })
@@ -51,13 +49,18 @@ describe('FavoriteController', () => {
         await app.init();
 
         favoriteService = moduleFixture.get<FavoriteService>(FavoriteService);
-    }, 10000);
+    });
 
     afterAll(async () => {
         await app.close();
     });
 
+    // -------------------------------------
+    // POST /favorites
+    // -------------------------------------
     it('deve adicionar um favorito', async () => {
+        favoriteService.addFavorite = jest.fn().mockResolvedValue(fakeFavorite);
+
         const response = await request(app.getHttpServer())
             .post('/favorites')
             .set('Authorization', 'Bearer MOCK_JWT')
@@ -65,25 +68,67 @@ describe('FavoriteController', () => {
 
         expect(response.status).toBe(201);
         expect(response.body).toEqual(fakeFavorite);
-        expect(favoriteService.addFavorite).toHaveBeenCalledWith(expect.any(Number), 2);
+        expect(favoriteService.addFavorite).toHaveBeenCalledWith(1, 2);
     });
 
-    it('deve listar favoritos do usuário', async () => {
+    // -------------------------------------
+    // GET /favorites - sem filtros
+    // -------------------------------------
+    it('deve listar favoritos do usuário sem filtros', async () => {
+        favoriteService.findByUser = jest.fn().mockResolvedValue(fakeFavorites);
+
         const response = await request(app.getHttpServer())
             .get('/favorites')
             .set('Authorization', 'Bearer MOCK_JWT');
 
         expect(response.status).toBe(200);
         expect(response.body).toEqual(fakeFavorites);
-        expect(favoriteService.findByUser).toHaveBeenCalledWith(expect.any(Number), {});
+
+        expect(favoriteService.findByUser).toHaveBeenCalledWith(1, {
+            category: undefined,
+            minPrice: undefined,
+            maxPrice: undefined,
+            state: undefined,
+            city: undefined,
+            search: undefined,
+        });
     });
 
+    // -------------------------------------
+    // GET /favorites - com filtros
+    // -------------------------------------
+    it('deve listar favoritos do usuário com filtros', async () => {
+        favoriteService.findByUser = jest.fn().mockResolvedValue(fakeFavorites);
+
+        const response = await request(app.getHttpServer())
+            .get('/favorites?category=tech&minPrice=10&maxPrice=100&state=PE&city=Recife&search=carp')
+            .set('Authorization', 'Bearer MOCK_JWT');
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(fakeFavorites);
+
+        expect(favoriteService.findByUser).toHaveBeenCalledWith(1, {
+            category: 'tech',
+            minPrice: 10,
+            maxPrice: 100,
+            state: 'PE',
+            city: 'Recife',
+            search: 'carp',
+        });
+    });
+
+    // -------------------------------------
+    // DELETE /favorites/:serviceId
+    // -------------------------------------
     it('deve remover um favorito', async () => {
+        favoriteService.removeFavorite = jest.fn().mockResolvedValue({ message: 'Removed' });
+
         const response = await request(app.getHttpServer())
             .delete('/favorites/2')
             .set('Authorization', 'Bearer MOCK_JWT');
 
         expect(response.status).toBe(200);
-        expect(favoriteService.removeFavorite).toHaveBeenCalledWith(expect.any(Number), 2);
+        expect(response.body).toEqual({ message: 'Removed' });
+        expect(favoriteService.removeFavorite).toHaveBeenCalledWith(1, 2);
     });
 });

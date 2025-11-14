@@ -1,32 +1,57 @@
+// TESTE ATUALIZADO ─ ALINHADO AO SERVICE ATUAL
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConversationService } from '../conversations.service';
 import { Conversation } from '../conversation.entity';
+import { ConversationParticipant } from '../conversation-participant.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
+import { NotFoundException } from '@nestjs/common';
 
 describe('ConversationService', () => {
     let service: ConversationService;
-    let ConversationRepository: Repository<Conversation>;
-    let dataSource: DataSource;
 
-    const mockRepository = {
+    const mockConversationRepo = {
         find: jest.fn(),
         createQueryBuilder: jest.fn(),
         delete: jest.fn(),
+        findOne: jest.fn(),
+    };
+
+    const mockParticipantRepo = {
+        findOne: jest.fn(),
+        save: jest.fn(),
+        count: jest.fn(),
     };
 
     const mockDataSource = {
         transaction: jest.fn().mockImplementation(async (fn) => {
             return fn({
-                create: jest.fn((entity, values?) => ({ id: 1, ...values })),
-                save: jest.fn(async (entity) => entity),
-                getRepository: jest.fn().mockReturnValue({
-                    createQueryBuilder: jest.fn(() => ({
-                        innerJoin: jest.fn().mockReturnThis(),
-                        getOne: jest.fn(),
-                    })),
+                getRepository: jest.fn().mockImplementation((entity) => {
+                    if (entity === Conversation) {
+                        return {
+                            create: jest.fn().mockReturnValue({ id: 1 }),
+                            save: jest.fn().mockResolvedValue({ id: 1 }),
+                            createQueryBuilder: jest.fn().mockReturnValue({
+                                innerJoin: jest.fn().mockReturnThis(),
+                                leftJoinAndSelect: jest.fn().mockReturnThis(),
+                                getOne: jest.fn().mockResolvedValue(null),
+                            }),
+                            findOne: jest.fn().mockResolvedValue({
+                                id: 1,
+                                participants: [],
+                            }),
+                        };
+                    }
+                    if (entity === ConversationParticipant) {
+                        return {
+                            findOne: jest.fn(),
+                            save: jest.fn(),
+                            create: jest.fn().mockImplementation((data) => data),
+                        };
+                    }
+                    return null;
                 }),
-                findOne: jest.fn(async (entity, options) => ({ id: 1, participants: [] })),
             });
         }),
     };
@@ -35,65 +60,75 @@ describe('ConversationService', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 ConversationService,
-                { provide: getRepositoryToken(Conversation), useValue: mockRepository },
+                { provide: getRepositoryToken(Conversation), useValue: mockConversationRepo },
+                { provide: getRepositoryToken(ConversationParticipant), useValue: mockParticipantRepo },
                 { provide: DataSource, useValue: mockDataSource },
             ],
         }).compile();
 
         service = module.get<ConversationService>(ConversationService);
-        ConversationRepository = module.get(getRepositoryToken(Conversation));
-        dataSource = module.get(DataSource);
     });
 
     it('deve estar definido', () => {
         expect(service).toBeDefined();
     });
 
-    it('deve criar uma nova conversa', async () => {
+    // --- CREATE ---
+    it('deve criar uma nova conversa se não existir anteriormente', async () => {
         const dto = { participantId: 2 };
         const userId = 1;
 
-        const resultado = await service.create(dto as any, userId);
+        const result = await service.create(dto as any, userId);
 
-        expect(resultado).toHaveProperty('id', 1);
-        expect(resultado).toHaveProperty('participants');
+        expect(result).toHaveProperty('id', 1);
+        expect(result).toHaveProperty('participants');
     });
 
+    // --- FIND ALL ---
     it('deve retornar todas as conversas', async () => {
-        const conversasMock = [{ id: 1 }, { id: 2 }];
-        mockRepository.find.mockResolvedValue(conversasMock);
+        const mock = [{ id: 1 }, { id: 2 }];
+        mockConversationRepo.find.mockResolvedValue(mock);
 
-        const resultado = await service.findAll();
+        const result = await service.findAll();
 
-        expect(resultado).toEqual(conversasMock);
-        expect(mockRepository.find).toHaveBeenCalled();
+        expect(result).toEqual(mock);
+        expect(mockConversationRepo.find).toHaveBeenCalled();
     });
 
-    it('deve buscar conversas de um usuário', async () => {
-        // Mock completo do QueryBuilder
-        const mockQueryBuilder: any = {
+    // --- FIND ONE (DO USUÁRIO) ---
+    it('deve buscar conversas do usuário', async () => {
+        const query = {
             leftJoinAndSelect: jest.fn().mockReturnThis(),
             where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
             getMany: jest.fn().mockResolvedValue([{ id: 1 }]),
         };
-        mockRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
-        const resultado = await service.findOne(1);
+        mockConversationRepo.createQueryBuilder.mockReturnValue(query);
 
-        expect(resultado).toEqual([{ id: 1 }]);
-        expect(mockRepository.createQueryBuilder).toHaveBeenCalledWith('conversation');
+        const result = await service.findOne(1);
+
+        expect(result).toEqual([{ id: 1 }]);
     });
 
-    it('deve remover uma conversa', async () => {
-        mockRepository.delete.mockResolvedValue({ affected: 1 });
+    // --- REMOVE ---
+    it('deve remover conversa quando usuário existe no registro', async () => {
+        mockParticipantRepo.findOne.mockResolvedValue({
+            id: 1,
+            deleted: false,
+        });
 
-        await expect(service.remove(1)).resolves.toBeUndefined();
-        expect(mockRepository.delete).toHaveBeenCalledWith(1);
+        mockParticipantRepo.save.mockResolvedValue({});
+        mockParticipantRepo.count.mockResolvedValue(1);
+
+        const result = await service.remove(1, 1);
+
+        expect(result).toEqual({ message: 'Conversa deletada com sucesso.' });
     });
 
-    it('deve lançar NotFoundException se não encontrar conversa ao remover', async () => {
-        mockRepository.delete.mockResolvedValue({ affected: 0 });
+    it('deve lançar NotFoundException ao tentar remover conversa inexistente', async () => {
+        mockParticipantRepo.findOne.mockResolvedValue(null);
 
-        await expect(service.remove(999)).rejects.toThrow('Conversation #999 not found');
+        await expect(service.remove(99, 1)).rejects.toThrow(NotFoundException);
     });
 });

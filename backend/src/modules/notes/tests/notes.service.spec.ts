@@ -38,7 +38,7 @@ describe('NoteService', () => {
         jest.clearAllMocks();
     });
 
-    const mockUser: User = { id: 1, name: 'John Doe' } as User;
+    const mockUser: User = { id: 1 } as User;
     const mockNote: Note = {
         id: 1,
         content: 'This is a test note.',
@@ -94,6 +94,7 @@ describe('NoteService', () => {
     describe('update', () => {
         it('deve atualizar uma nota e retorná-la', async () => {
             const dto: UpdateNoteDto = { content: 'Updated Note' };
+
             noteRepository.update.mockResolvedValue({ affected: 1 } as any);
             noteRepository.findOneBy.mockResolvedValue({ ...mockNote, ...dto });
 
@@ -101,6 +102,15 @@ describe('NoteService', () => {
 
             expect(noteRepository.update).toHaveBeenCalledWith(1, dto);
             expect(result.content).toBe('Updated Note');
+        });
+
+        it('deve lançar erro se a nota não existir ao atualizar', async () => {
+            const dto: UpdateNoteDto = { content: 'Updated Note' };
+
+            noteRepository.update.mockResolvedValue({ affected: 1 } as any);
+            noteRepository.findOneBy.mockResolvedValue(null);
+
+            await expect(service.update(999, dto)).rejects.toThrow(NotFoundException);
         });
     });
 

@@ -1,12 +1,12 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber } from "class-validator";
+import { IsNotEmpty, IsNumber } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateFavoriteDto {
-    @IsNotEmpty({ message: 'O ID do serviço é obrigatório.' })
-    @IsNumber({}, { message: 'O ID do serviço deve ser um número.' })
-    @ApiProperty({
-      example: 10,
-      description: 'ID do serviço que o usuário deseja adicionar aos favoritos.',
-    })
-    serviceId: number;
-  }
+export default class CreateFavoriteDto {
+  @ApiProperty({
+    example: 5,
+    description: 'ID do serviço que será adicionado aos favoritos',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  serviceId: number;
+}

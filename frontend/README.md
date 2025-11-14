@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Documentação do Front-end  
+## Catálogo Comunitário de Serviços Locais
 
-## Getting Started
+---
 
-First, run the development server:
+# 1. Visão Geral
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+O front-end é desenvolvido em **Next.js**, responsável por entregar a interface do Catálogo Comunitário de Serviços Locais. Ele conecta consumidores e prestadores, permitindo cadastro, autenticação, busca de serviços, favoritos, gerenciamento de serviços e chats em tempo real.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# 2. Objetivos do Front-end
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Entregar uma interface rápida, responsiva e intuitiva.  
+- Garantir integração limpa com a API NestJS usando Axios + interceptors.  
+- Suportar os perfis *Consumidor* e *Prestador*, com fluxos completos para ambos.  
+- Permitir escalabilidade futura: caching, modularidade e code-splitting.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+# 3. Arquitetura
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Framework:** Next.js (App Router)  
+**Linguagem:** TypeScript  
+**Estado:** Context API + SWR/React Query  
+**HTTP:** Axios com interceptors (auth + error handling)  
+**Chat:** Socket.io (com hook `useChat`)  
+**Estilização:** SCSS + CSS Modules  
+**Build/Deploy:** Vercel  
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Arquitetura orientada a módulos, com separação entre páginas, componentes, hooks e utilitários.
+---
 
-## Deploy on Vercel
+# 4. API — Contratos Essenciais
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### **Auth**
+**POST /api/auth/register**  
+Campos: nome, email, senha, telefone, role, cep, state, city, number  
+Resposta: `{ user, token }`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**POST /api/auth/login**  
+Resposta: `{ user, token }`
+
+### **Usuário**
+**GET /api/users/me** — retorna dados do usuário logado  
+**PUT /api/users/me** — atualiza perfil
+
+### **Serviços**
+- **POST /api/services**
+- **GET /api/services** (filtros: busca, categoria, faixa de preço)
+- **GET /api/services/:id**
+- **PUT /api/services/:id**
+- **DELETE /api/services/:id**
+- **POST /api/services/:id/images**
+
+### **Favoritos**
+- GET /api/favorites  
+- POST /api/favorites  
+- DELETE /api/favorites/:id  
+
+### **Chats**
+- GET /api/conversations  
+- GET /api/conversations/:id/messages  
+- WebSocket: enviar/receber mensagens
+
+---
+
+# 5. Fluxos Principais do Usuário (MVP)
+
+### **Consumidor**
+- Cadastro e login  
+- Buscar serviços com filtros  
+- Ver detalhes de serviço  
+- Favoritar/Desfavoritar  
+- Chat para contato/contratação  
+- Dashboard com histórico, favoritos e notas pessoais  
+
+### **Prestador**
+- Cadastro/Login com role "provider"  
+- Criar, editar e remover serviços  
+- Upload de até 5 imagens  
+- Chat com consumidores  
+- Dashboard de gerenciamento  
+
+---
+
+# 6. Componentes Fundamentais
+
+### **ServiceBanner**
+Exibe miniatura, nome, categoria, preço, localização e ações (favoritar/contratar).
+
+### **ServiceModal**
+Formulário de criação/edição de serviços (name, description, price, category, images…).
+
+### **Sidebar**
+Menu dinâmico baseado no tipo de usuário.
+
+### **api.ts**
+Instância Axios com:
+- Interceptor de request → adiciona token  
+- Interceptor de response → trata erros e expirações  
+
+---
+
+# 7. Estilo e UX
+
+- Totalmente responsivo  
+- Inputs e modais com acessibilidade (labels, aria, focos)  
+- Feedback visual para ações (toast: sucesso/erro)  
+- Imagens otimizadas com `next/image`  
+- Páginas com layout consistente usando App Router  
+
+---

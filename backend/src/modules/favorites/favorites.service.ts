@@ -40,33 +40,39 @@ export class FavoriteService {
         return this.favoriteRepository.save(favorite);
     }
 
-    async findByUser(userId: number, filters?: FavoriteFilters) {
-        const query = this.favoriteRepository.createQueryBuilder('favorite')
+    async findByUser(consumerId: number, filters?: any): Promise<Favorite[]> {
+        const query = this.favoriteRepository
+            .createQueryBuilder('favorite')
+            .leftJoinAndSelect('favorite.consumer', 'consumer')
             .leftJoinAndSelect('favorite.service', 'service')
+            .leftJoinAndSelect('service.images', 'images')
             .leftJoinAndSelect('service.provider', 'provider')
-            .where('favorite.consumerId = :userId', { userId });
+            .where('consumer.id = :consumerId', { consumerId })
 
+        // Filtros opcionais
         if (filters?.category) query.andWhere('service.category = :category', { category: filters.category });
-        if (filters?.minPrice !== undefined) query.andWhere('service.price >= :minPrice', { minPrice: filters.minPrice });
-        if (filters?.maxPrice !== undefined) query.andWhere('service.price <= :maxPrice', { maxPrice: filters.maxPrice });
-        if (filters?.state) query.andWhere('service.state = :state', { state: filters.state });
-        if (filters?.city) query.andWhere('service.city = :city', { city: filters.city });
+        if (filters?.state) query.andWhere('service.state ILIKE :state', { state: `%${filters.state}%` });
+        if (filters?.city) query.andWhere('service.city ILIKE :city', { city: `%${filters.city}%` });
+        if (filters?.minPrice) query.andWhere('service.price >= :minPrice', { minPrice: filters.minPrice });
+        if (filters?.maxPrice) query.andWhere('service.price <= :maxPrice', { maxPrice: filters.maxPrice });
         if (filters?.search) {
             query.andWhere(
-                '(LOWER(service.name) LIKE :search OR LOWER(service.description) LIKE :search)',
-                { search: `%${filters.search.toLowerCase()}%` },
+                '(service.name ILIKE :search OR service.description ILIKE :search)',
+                { search: `%${filters.search}%` },
             );
         }
 
         const favorites = await query.getMany();
 
-        // 🔹 Normaliza para devolver apenas os serviços
-        return favorites.map(fav => ({
-            ...fav.service,
-            isFavorite: true,
+        return favorites.map(favorite => ({
+            ...favorite,
+            service: {
+                ...favorite.service,
+                images: favorite.service.images ?? [],
+                isFavorite: true,
+            },
         }));
     }
-
 
     async removeFavorite(consumerId: number, serviceId: number): Promise<void> {
         const favorite = await this.favoriteRepository.findOne({

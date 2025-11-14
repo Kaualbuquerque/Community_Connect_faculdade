@@ -57,35 +57,41 @@ export class HistoryService {
     }
 
 
-    async findByConsumer(consumerId: number): Promise<History[]> {
-        // Busca histórico do usuário
-        const histories = await this.historyRepository.find({
-            where: { consumer: { id: consumerId } },
-            relations: ['service', 'consumer', 'service.provider'],
-            order: { usedAt: "DESC" },
-        });
+    async findByConsumer(consumerId: number): Promise<any[]> {
+        const histories = await this.historyRepository
+            .createQueryBuilder('history')
+            .leftJoinAndSelect('history.consumer', 'consumer')
+            .leftJoinAndSelect('history.service', 'service')
+            .leftJoinAndSelect('service.images', 'images')
+            .leftJoinAndSelect('service.provider', 'provider')
+            .where('consumer.id = :consumerId', { consumerId })
+            .orderBy('history.usedAt', 'DESC')
+            .getMany();
 
-        // Busca favoritos do usuário
         const favorites = await this.favoriteRepository.find({
             where: { consumer: { id: consumerId } },
             relations: ['service'],
         });
 
-        const favoriteIds = favorites.map(fav => fav.service.id);
+        const favoriteIds = favorites.map(f => f.service.id);
 
-        // Mapeia histórico adicionando flag isFavorite e convertendo imagens
         return histories.map(history => {
             const service = history.service;
 
-            const serviceWithFavorite = {
-                ...service,
-                images: service.images?.map(img => img) ?? [],
-                isFavorite: favoriteIds.includes(service.id),
-            };
-
             return {
                 ...history,
-                service: serviceWithFavorite,
+                service: {
+                    id: service.id,
+                    name: service.name,
+                    description: service.description,
+                    state: service.state,
+                    city: service.city,
+                    category: service.category,
+                    price: service.price,
+                    provider: service.provider,
+                    images: service.images?.map(image => image.url) ?? [],
+                    isFavorite: favoriteIds.includes(service.id),
+                },
             };
         });
     }
